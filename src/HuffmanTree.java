@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.Arrays;
 import java.util.Stack;
 
-//TODO: switch over from using 8 bit ascii chars in .huf files to 16 bit unicode
-
 public class HuffmanTree
 {
 	class AmbiguousSymbolException extends IllegalArgumentException
@@ -220,6 +218,7 @@ public class HuffmanTree
 		int i = 1;
 		ArrayList<Byte> ra = new ArrayList(msg.length());
 		ra.add((byte)0);
+		ra.add((byte)0);
 		daughtersLeft.push(2);
 		while(!daughtersLeft.empty())
 		{
@@ -231,10 +230,16 @@ public class HuffmanTree
 			{
 				daughtersLeft.push(2);
 				ra.add((byte)0);
+				ra.add((byte)0);
 			}
 			else
 			{
-				ra.add((byte)msg.charAt(i));
+				//get upper 8 bits of char
+				byte upper8 = (byte)(((int)msg.charAt(i) & 0xFF00) >> 8);
+				//get lower 8 bits of char
+				byte lower8 = (byte)((int)msg.charAt(i) & 0xFF);
+				ra.add(upper8);
+				ra.add(lower8);
 			}
 			i++;
 		}
@@ -295,7 +300,7 @@ public class HuffmanTree
 		//now we have the bytes, read the tree
 		Stack<Integer> daughtersLeft = new Stack();
 		Stack<Integer> indexInSig = new Stack();
-		int i = 1;
+		int i = 2;
 		daughtersLeft.push(2);
 		indexInSig.push(0);
 //		int maxIndexInSig = 0;
@@ -305,6 +310,9 @@ public class HuffmanTree
 		int countRegularSymbols = 0;
 		while(!daughtersLeft.empty())
 		{
+			int upper8 = file[i];
+			int lower8 = file[i+1];
+			int cChar = (upper8 << 8) | lower8;
 			int dlAtLevelL = daughtersLeft.pop();
 			dlAtLevelL--;
 			Symbol current = new Symbol();
@@ -318,7 +326,7 @@ public class HuffmanTree
 				daughtersLeft.push(dlAtLevelL);
 			else
 				indexInSig.pop();
-			if(file[i] == 0)
+			if(cChar == 0)
 			{
 				//metasymbol-open
 				daughtersLeft.push(2);
@@ -327,12 +335,12 @@ public class HuffmanTree
 			else
 			{
 				//regular symbol
-				current.sym = (char)file[i];
+				current.sym = (char)cChar;
 				countRegularSymbols++;
 			}
 			
 			sig.add(current);
-			i++;
+			i += 2;
 		}
 		
 		//now we have to set up alphabet
