@@ -19,6 +19,6 @@ Say I have a huffman tree:
   a   b
 ```
 
-We can write this tree in a flat format as: |||abc|de
+We can write this tree in a flat format as: `|||abc|de`
 
 where the "|" symbol is a stand-in for the real encoding (NULL). We traverse the tree, adding a NULL when there's an internal node or the letter when there's a leaf, then simply recurse on the left and right daughter until we're done.
